@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>7. Sınıf Mini Matematik Oyunu</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a33; --text:#e9ecff; --muted:#a7b0d6; --ok:#2ecc71; --bad:#ff5c7a; --accent:#6ea8ff; --pink:#ff6b9d; --blue:#4da3ff; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 10%, #1a2a5a 0%, var(--bg) 55%),
+                  radial-gradient(900px 500px at 90% 0%, #3a1a5a 0%, rgba(11,16,32,0) 60%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .app{ width:min(980px, 100%); }
+    .card{
+      background: rgba(18,26,51,0.78);
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    header{
+      padding:18px 20px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    .brand{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .brand h1{ margin:0; font-size:16px; letter-spacing:0.2px; }
+    .brand p{ margin:0; color:var(--muted); font-size:12px; }
+    .hud{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill{
+      background: rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.10);
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--text);
+      display:flex; gap:8px; align-items:center;
+      min-width: 120px;
+      justify-content:space-between;
+    }
+    .pill b{ font-variant-numeric: tabular-nums; }
+    .pill.female{ border-color: rgba(255,107,157,0.4); background: rgba(255,107,157,0.1); }
+    .pill.male{ border-color: rgba(77,163,255,0.4); background: rgba(77,163,255,0.1); }
+    main{ padding:18px 20px 22px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:16px;
+    }
+    @media (max-width: 820px){
+      .grid{ grid-template-columns: 1fr; }
+      .pill{ min-width: 110px; }
+    }
+
+    .panel{
+      background: rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .title{
+      margin:0 0 10px;
+      font-size:14px;
+      color: var(--muted);
+    }
+    .big{
+      font-size:20px;
+      margin:0 0 14px;
+      line-height:1.25;
+    }
+
+    .btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
+    button{
+      cursor:pointer;
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:700;
+      color:var(--text);
+      background: rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.14);
+      transition: transform .08s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+    }
+    button:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.11); }
+    button:active{ transform: translateY(0px) scale(0.99); }
+    button.primary{ background: rgba(110,168,255,0.18); border-color: rgba(110,168,255,0.45); }
+    button.female{ background: rgba(255,107,157,0.18); border-color: rgba(255,107,157,0.45); }
+    button.male{ background: rgba(77,163,255,0.18); border-color: rgba(77,163,255,0.45); }
+    button.ghost{ background: transparent; border-color: rgba(255,255,255,0.14); color: var(--muted); }
+    button:disabled{ opacity:0.55; cursor:not-allowed; transform:none; }
+
+    .choices{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px; }
+    @media (max-width: 520px){ .choices{ grid-template-columns: 1fr; } }
+
+    .choice{
+      text-align:left;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      font-weight:700;
+    }
+    .choice small{ color: var(--muted); font-weight:600; }
+    .choice.ok{ border-color: rgba(46,204,113,0.65); background: rgba(46,204,113,0.14); }
+    .choice.bad{ border-color: rgba(255,92,122,0.75); background: rgba(255,92,122,0.14); }
+
+    .note{ color: var(--muted); font-size:12px; line-height:1.4; margin:10px 0 0; }
+    .divider{ height:1px; background: rgba(255,255,255,0.08); margin:12px 0; }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.10);
+      font-size:12px; color: var(--muted);
+      margin-bottom:10px;
+    }
+    .status{
+      min-height: 22px;
+      font-size:13px;
+      margin-top:10px;
+      color: var(--muted);
+    }
+    .status b{ color: var(--text); }
+
+    input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      font-size:15px;
+      font-family: inherit;
+      margin-top:8px;
+    }
+    input:focus{ outline:none; border-color: var(--accent); }
+
+    .gender-select{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .leaderboard{
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .lb-entry{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 12px;
+      background: rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:10px;
+      margin-bottom:8px;
+    }
+    .lb-entry.female{ border-color: rgba(255,107,157,0.3); }
+    .lb-entry.male{ border-color: rgba(77,163,255,0.3); }
+    .lb-name{ font-weight:600; }
+    .lb-score{ color: var(--accent); font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <header>
+        <div class="brand">
+          <h1>7. Sınıf Matematik: Mini Oyun</h1>
+          <p>Mod seç → 10 soru → puan kap. (Zaman: 90 sn)</p>
+        </div>
+        <div class="hud">
+          <div class="pill" id="playerPill">Oyuncu <b id="hudPlayer">—</b></div>
+          <div class="pill">Mod <b id="hudMode">—</b></div>
+          <div class="pill">Soru <b id="hudQ">0/10</b></div>
+          <div class="pill">Puan <b id="hudScore">0</b></div>
+          <div class="pill">Süre <b id="hudTime">90</b></div>
+        </div>
+      </header>
+
+      <main>
+        <div class="grid">
+          <section class="panel" id="left">
+            <!-- Content -->
+          </section>
+
+          <aside class="panel" id="right">
+            <p class="title">Kısa Kurallar</p>
+            <ul class="note">
+              <li>Her mod 10 soru.</li>
+              <li>Doğru: +10 puan, seri (streak) varsa +2 bonus.</li>
+              <li>Yanlış: seri sıfırlanır.</li>
+              <li>Süre bitince oyun biter.</li>
+            </ul>
+            <div class="divider"></div>
+            <p class="title">İpucu</p>
+            <p class="note" id="tipBox">Giriş yapın ve oyuna başlayın.</p>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+<script>
+/* ---------- yardımcılar ---------- */
+const $ = (id) => document.getElementById(id);
+const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const shuffle = (arr) => arr.map(v => [Math.random(), v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b,a%b]; } return a||1; }
+function normFrac(n,d){
+  if(d===0) return {n:1,d:0};
+  if(d<0){ n=-n; d=-d; }
+  const g=gcd(n,d);
+  return {n:n/g, d:d/g};
+}
+function fracToStr(f){
+  if(f.d===1) return String(f.n);
+  return `${f.n}/${f.d}`;
+}
+function addFrac(a,b){ return normFrac(a.n*b.d + b.n*a.d, a.d*b.d); }
+function subFrac(a,b){ return normFrac(a.n*b.d - b.n*a.d, a.d*b.d); }
+function mulFrac(a,b){ return normFrac(a.n*b.n, a.d*b.d); }
+function divFrac(a,b){ return normFrac(a.n*b.d, a.d*b.n); }
+
+/* ---------- oyun durumu ---------- */
+const TOTAL_Q = 10;
+const TOTAL_T = 90;
+
+let state = {
+  playerName: null,
+  gender: null, // "male" | "female"
+  mode: null, // "algebra" | "rational"
+  qIndex: 0,
+  score: 0,
+  streak: 0,
+  timeLeft: TOTAL_T,
+  timer: null,
+  locked: false,
+  current: null
+};
+
+function setHUD(){
+  const pill = $("playerPill");
+  if(state.gender){
+    pill.classList.remove("male", "female");
+    pill.classList.add(state.gender);
+  }
+  $("hudPlayer").textContent = state.playerName || "—";
+  $("hudMode").textContent = state.mode ? (state.mode==="algebra" ? "Cebirsel" : "Rasyonel") : "—";
+  $("hudQ").textContent = `${state.qIndex}/${TOTAL_Q}`;
+  $("hudScore").textContent = state.score;
+  $("hudTime").textContent = state.timeLeft;
+}
+
+function stopTimer(){
+  if(state.timer){ clearInterval(state.timer); state.timer=null; }
+}
+function startTimer(){
+  stopTimer();
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    if(state.timeLeft <= 0){
+      state.timeLeft = 0;
+      setHUD();
+      endGame("Süre doldu.");
+      return;
+    }
+    setHUD();
+  }, 1000);
+}
+
+/* ---------- soru üreticiler ---------- */
+function genAlgebraQuestion(){
+  const difficulty = state.gender === "male" ? "easy" : "hard";
+  const type = rnd(1,4);
+
+  if(type===1){
+    // Değer bulma
+    const a = difficulty === "easy" ? rnd(2,4) : rnd(3,8) * (Math.random()<0.3 ? -1 : 1);
+    const x = difficulty === "easy" ? rnd(-2,4) : rnd(-6,8);
+    const b = difficulty === "easy" ? rnd(-5,5) : rnd(-12,12);
+    const ans = a*x + b;
+    const text = `x = ${x} iken  ${a}x ${b>=0?"+":""}${b}  değeri kaçtır?`;
+    const correct = String(ans);
+    const distract = new Set([correct]);
+    while(distract.size < 4){
+      const off = difficulty === "easy" ? rnd(-4,4)||2 : rnd(-10,10)||3;
+      distract.add(String(ans + off));
+    }
+    return {
+      text,
+      correct,
+      choices: shuffle([...distract]),
+      tip: "Yerine koy: x gördüğün yere sayı yaz, sonra işlemleri sırayla yap."
+    };
+  }
+
+  if(type===2){
+    // Benzer terimleri topla
+    const p = difficulty === "easy" ? rnd(-5,6) : rnd(-10,10);
+    const q = difficulty === "easy" ? rnd(-5,6) : rnd(-10,10);
+    const r = difficulty === "easy" ? rnd(-5,6) : rnd(-10,10);
+    const sum = p+q+r;
+    const text = `Sadeleştir:  ${p}x ${q>=0?"+":""}${q}x ${r>=0?"+":""}${r}x`;
+    const correct = (sum===0) ? "0" : (sum===1 ? "x" : (sum===-1 ? "-x" : `${sum}x`));
+    const distract = new Set([correct]);
+    const candidates = [
+      `${p}x`, `${q}x`, `${r}x`,
+      `${p+q}x`, `${p+r}x`, `${q+r}x`,
+      `${sum+1}x`, `${sum-1}x`, `${sum+2}x`
+    ];
+    while(distract.size < 4){
+      const pick = candidates[rnd(0,candidates.length-1)];
+      distract.add(pick==="0x" ? "0" : pick);
+    }
+    return {
+      text,
+      correct,
+      choices: shuffle([...distract]),
+      tip: "Benzer terim: x'li olanlar kendi aralarında toplanır."
+    };
+  }
+
+  if(type===3){
+    // Dağılma
+    const k = difficulty === "easy" ? rnd(2,4) : rnd(2,7) * (Math.random()<0.25 ? -1 : 1);
+    const m = difficulty === "easy" ? rnd(-6,6) : rnd(-12,12);
+    const text = `Aç (dağıt):  ${k}(x ${m>=0?"+":""}${m})`;
+    const c1 = `${k}x`;
+    const c2v = k*m;
+    const correct = `${c1} ${c2v>=0?"+":""}${c2v}`;
+    const distract = new Set([correct]);
+    const wrong1 = `${k}x ${m>=0?"+":""}${m}`;
+    const wrong2 = `${k}x ${m>=0?"+":""}${k+m}`;
+    const wrong3 = `${(k*m)}x ${m>=0?"+":""}${m}`;
+    [wrong1, wrong2, wrong3].forEach(x => distract.add(x));
+    while(distract.size<4){
+      distract.add(`${k}x ${(c2v + rnd(-4,4))>=0?"+":" "}${c2v + rnd(-4,4)}`);
+    }
+    return {
+      text,
+      correct,
+      choices: shuffle([...distract]),
+      tip: "Dağılma: k(x+m)=kx+km"
+    };
+  }
+
+  // type===4: Ortak çarpan
+  const k = difficulty === "easy" ? rnd(2,5) : rnd(2,9);
+  const t = difficulty === "easy" ? rnd(-4,6) : rnd(-8,10);
+  const a = k;
+  const b = k*t;
+  const text = `Ortak çarpanı paranteze al:  ${a}x ${b>=0?"+":""}${b}`;
+  const correct = `${k}(x ${t>=0?"+":""}${t})`;
+  const distract = new Set([correct]);
+  distract.add(`${k}x ${t>=0?"+":""}${t}`);
+  distract.add(`${k}(x) ${t>=0?"+":""}${t}`);
+  distract.add(`${k+t}(x ${t>=0?"+":""}${t})`);
+  return {
+    text,
+    correct,
+    choices: shuffle([...distract]),
+    tip: "Ortak çarpan: iki terimde de ortak sayıyı dışarı al."
+  };
+}
+
+function genRationalQuestion(){
+  const difficulty = state.gender === "male" ? "easy" : "hard";
+  const type = rnd(1,5);
+  
+  const range = difficulty === "easy" ? 6 : 12;
+  const a = normFrac(rnd(-range,range) || 3, rnd(2, difficulty==="easy"?6:10));
+  const b = normFrac(rnd(-range,range) || 2, rnd(2, difficulty==="easy"?6:10));
+
+  if(type===1){
+    const ans = addFrac(a,b);
+    const text = `Topla:  ${fracToStr(a)} + ${fracToStr(b)} = ?`;
+    return fracMCQ(text, ans, "Paydaları eşitle, sonra sadeleştir.");
+  }
+  if(type===2){
+    const ans = subFrac(a,b);
+    const text = `Çıkar:  ${fracToStr(a)} - (${fracToStr(b)}) = ?`;
+    return fracMCQ(text, ans, "Çıkarma: paydalar eşit olmalı.");
+  }
+  if(type===3){
+    const ans = mulFrac(a,b);
+    const text = `Çarp:  ${fracToStr(a)} × ${fracToStr(b)} = ?`;
+    return fracMCQ(text, ans, "Çarpma: pay×pay, payda×payda.");
+  }
+  if(type===4){
+    const b2 = (b.n===0) ? {n:1,d:b.d} : b;
+    const ans = divFrac(a,b2);
+    const text = `Böl:  ${fracToStr(a)} ÷ ${fracToStr(b2)} = ?`;
+    return fracMCQ(text, ans, "Bölme: ters çevir ve çarp.");
+  }
+  
+  // type===5: karşılaştırma
+  const A = normFrac(a.n,a.d), B = normFrac(b.n,b.d);
+  const left = A.n * B.d;
+  const right = B.n * A.d;
+  let correct = "=";
+  if(left>right) correct=">";
+  else if(left<right) correct="<";
+  const text = `Karşılaştır:  ${fracToStr(A)}  ?  ${fracToStr(B)}`;
+  const choices = shuffle([">","<","="]);
+  return {
+    text,
+    correct,
+    choices,
+    tip: "Karşılaştırma: çapraz çarp."
+  };
+}
+
+function fracMCQ(text, ansFrac, tip){
+  const correct = fracToStr(ansFrac);
+  const distract = new Set([correct]);
+
+  const d1 = fracToStr(normFrac(ansFrac.n + (rnd(-3,3)||1), ansFrac.d));
+  const d2 = fracToStr(normFrac(ansFrac.n, ansFrac.d + (rnd(-3,3)||1)));
+  const d3 = fracToStr(normFrac(-ansFrac.n, ansFrac.d));
+  [d1,d2,d3].forEach(x => distract.add(x));
+
+  while(distract.size < 4){
+    const nn = ansFrac.n + (rnd(-6,6)||2);
+    const dd = Math.max(1, ansFrac.d + (rnd(-4,4)||1));
+    distract.add(fracToStr(normFrac(nn, dd)));
+  }
+
+  return {
+    text,
+    correct,
+    choices: shuffle([...distract].slice(0,4)),
+    tip
+  };
+}
+
+/* ---------- ekranlar ---------- */
+async function renderWelcome(){
+  stopTimer();
+  state = { playerName:null, gender:null, mode:null, qIndex:0, score:0, streak:0, timeLeft:TOTAL_T, timer:null, locked:false, current:null };
+  setHUD();
+  $("tipBox").textContent = "İsim ve cinsiyet girin, oyuna başlayın.";
+
+  $("left").innerHTML = `
+    <span class="badge">👋 Hoş Geldin!</span>
+    <h2 class="big">Matematik Macerasına Hazır mısın?</h2>
+    <p class="note">Başlamak için isim ve cinsiyet bilgini gir.</p>
+    
+    <input type="text" id="nameInput" placeholder="İsmini yaz..." maxlength="20" />
+    
+    <p class="note" style="margin-top:16px">Cinsiyetini seç:</p>
+    <div class="gender-select">
+      <button class="male" id="btnMale">👦 Erkek</button>
+      <button class="female" id="btnFemale">👧 Kız</button>
+    </div>
+    
+    <div class="btnrow" style="margin-top:16px">
+      <button class="primary" id="btnStart" disabled>Oyuna Başla</button>
+      <button class="ghost" id="btnLeaderboard">🏆 Skor Tablosu</button>
+    </div>
+  `;
+
+  let selectedGender = null;
+
+  $("btnMale").onclick = () => {
+    selectedGender = "male";
+    $("btnMale").style.opacity = "1";
+    $("btnFemale").style.opacity = "0.5";
+    checkStart();
+  };
+
+  $("btnFemale").onclick = () => {
+    selectedGender = "female";
+    $("btnFemale").style.opacity = "1";
+    $("btnMale").style.opacity = "0.5";
+    checkStart();
+  };
+
+  $("nameInput").oninput = checkStart;
+  $("btnLeaderboard").onclick = renderLeaderboard;
+
+  function checkStart(){
+    const name = $("nameInput").value.trim();
+    $("btnStart").disabled = !(name && selectedGender);
+  }
+
+  $("btnStart").onclick = () => {
+    const name = $("nameInput").value.trim();
+    if(!name || !selectedGender) return;
+    state.playerName = name;
+    state.gender = selectedGender;
+    setHUD();
+    renderHome();
+  };
+}
+
+function renderHome(){
+  $("tipBox").textContent = "Cebirsel veya rasyonel modu seçin.";
+
+  $("left").innerHTML = `
+    <span class="badge">🎯 Hedef: hızlı pratik</span>
+    <h2 class="big">Hangi modla başlayalım, ${escapeHtml(state.playerName)}?</h2>
+    <p class="note">İki seçenek var: <b>Cebirsel İfadeler</b> veya <b>Rasyonel Sayılar</b>.</p>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="primary" id="btnAlg">Cebirsel İfadeler</button>
+      <button class="primary" id="btnRat">Rasyonel Sayılar</button>
+    </div>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="ghost" id="btnLeaderboard">🏆 Skor Tablosu</button>
+      <button class="ghost" id="btnLogout">Çıkış Yap</button>
+    </div>
+  `;
+
+  $("btnAlg").onclick = () => startGame("algebra");
+  $("btnRat").onclick = () => startGame("rational");
+  $("btnLeaderboard").onclick = renderLeaderboard;
+  $("btnLogout").onclick = renderWelcome;
+}
+
+function startGame(mode){
+  state.mode = mode;
+  state.qIndex = 0;
+  state.score = 0;
+  state.streak = 0;
+  state.timeLeft = TOTAL_T;
+  state.locked = false;
+  setHUD();
+  startTimer();
+  nextQuestion();
+}
+
+function nextQuestion(){
+  if(state.qIndex >= TOTAL_Q){
+    endGame("10 soru tamamlandı.");
+    return;
+  }
+
+  state.qIndex++;
+  state.locked = false;
+
+  const q = state.mode==="algebra" ? genAlgebraQuestion() : genRationalQuestion();
+  state.current = q;
+
+  $("tipBox").textContent = q.tip;
+
+  const choicesHtml = q.choices.map((c,i)=>`
+    <button class="choice" data-choice="${escapeHtml(c)}">
+      <span>${escapeHtml(c)}</span>
+      <small>${String.fromCharCode(65+i)}</small>
+    </button>
+  `).join("");
+
+  $("left").innerHTML = `
+    <span class="badge">📌 ${state.mode==="algebra" ? "Cebirsel İfadeler" : "Rasyonel Sayılar"} • Soru ${state.qIndex}/${TOTAL_Q}</span>
+    <h2 class="big">${escapeHtml(q.text)}</h2>
+    <div class="choices">${choicesHtml}</div>
+    <div class="status" id="status">Bir seçenek seçin.</div>
+    <div class="btnrow" style="margin-top:14px">
+      <button class="ghost" id="btnHome">Ana Menü</button>
+      <button class="ghost" id="btnSkip">Pas Geç</button>
+    </div>
+  `;
+
+  setHUD();
+
+  document.querySelectorAll(".choice").forEach(btn => {
+    btn.addEventListener("click", () => handleAnswer(btn));
+  });
+
+  $("btnHome").onclick = renderHome;
+  $("btnSkip").onclick = () => {
+    if(state.locked) return;
+    state.streak = 0;
+    $("status").innerHTML = `Pas geçildi. Doğru cevap: <b>${escapeHtml(state.current.correct)}</b>`;
+    state.locked = true;
+    setTimeout(nextQuestion, 700);
+  };
+}
+
+function handleAnswer(btn){
+  if(state.locked) return;
+  state.locked = true;
+
+  const picked = btn.getAttribute("data-choice");
+  const correct = state.current.correct;
+  const isCorrect = (picked === correct);
+
+  document.querySelectorAll(".choice").forEach(b => {
+    const val = b.getAttribute("data-choice");
+    if(val === correct) b.classList.add("ok");
+    if(val === picked && !isCorrect) b.classList.add("bad");
+    b.disabled = true;
+  });
+
+  if(isCorrect){
+    state.streak++;
+    const bonus = state.streak >= 2 ? 2 : 0;
+    state.score += 10 + bonus;
+    
+    // Özel mesajlar
+    const rand = Math.random();
+    let msg = `✅ Doğru. <b>+${10+bonus}</b> (Seri: ${state.streak})`;
+    if(rand < 0.1) msg = `🎉 Bravo sadık! <b>+${10+bonus}</b> (Seri: ${state.streak})`;
+    else if(rand < 0.2) msg = `🔥 Helal be oğuz! <b>+${10+bonus}</b> (Seri: ${state.streak})`;
+    
+    $("status").innerHTML = msg;
+  } else {
+    state.streak = 0;
+    $("status").innerHTML = `❌ Yanlış. Doğru cevap: <b>${escapeHtml(correct)}</b>`;
+  }
+
+  setHUD();
+  setTimeout(nextQuestion, 750);
+}
+
+async function endGame(reason){
+  stopTimer();
+  setHUD();
+  
+  // Skoru kaydet
+  await saveScore(state.playerName, state.gender, state.score);
+  
+  const modeName = state.mode==="algebra" ? "Cebirsel İfadeler" : "Rasyonel Sayılar";
+  $("tipBox").textContent = "Skorun kaydedildi! Tekrar oynayabilir veya skor tablosuna bakabilirsin.";
+
+  $("left").innerHTML = `
+    <span class="badge">🏁 Oyun Bitti</span>
+    <h2 class="big">${escapeHtml(modeName)} modu tamamlandı.</h2>
+    <p class="note">${escapeHtml(reason)}</p>
+    <div class="divider"></div>
+    <p class="note">
+      Oyuncu: <b>${escapeHtml(state.playerName)}</b><br/>
+      Puan: <b>${state.score}</b><br/>
+      Kalan süre: <b>${state.timeLeft}</b> sn
+    </p>
+    <div class="btnrow" style="margin-top:14px">
+      <button class="primary" id="btnReplay">Tekrar Oyna</button>
+      <button class="ghost" id="btnLeaderboard">🏆 Skor Tablosu</button>
+      <button class="ghost" id="btnMenu">Ana Menü</button>
+    </div>
+  `;
+
+  $("btnReplay").onclick = () => startGame(state.mode);
+  $("btnMenu").onclick = renderHome;
+  $("btnLeaderboard").onclick = renderLeaderboard;
+}
+
+async function renderLeaderboard(){
+  $("tipBox").textContent = "En yüksek puanlar burada! Erkekler ve kızlar ayrı sıralanır.";
+  
+  const scores = await loadScores();
+  const maleScores = scores.filter(s => s.gender === "male").sort((a,b) => b.score - a.score).slice(0,10);
+  const femaleScores = scores.filter(s => s.gender === "female").sort((a,b) => b.score - a.score).slice(0,10);
+
+  const maleHTML = maleScores.length ? maleScores.map((s,i) => `
+    <div class="lb-entry male">
+      <span class="lb-name">${i+1}. ${escapeHtml(s.name)}</span>
+      <span class="lb-score">${s.score}</span>
+    </div>
+  `).join("") : '<p class="note">Henüz skor yok.</p>';
+
+  const femaleHTML = femaleScores.length ? femaleScores.map((s,i) => `
+    <div class="lb-entry female">
+      <span class="lb-name">${i+1}. ${escapeHtml(s.name)}</span>
+      <span class="lb-score">${s.score}</span>
+    </div>
+  `).join("") : '<p class="note">Henüz skor yok.</p>';
+
+  $("left").innerHTML = `
+    <span class="badge">🏆 Lider Tablosu</span>
+    <h2 class="big">En İyi Skorlar</h2>
+    
+    <p class="title" style="margin-top:16px">👦 Erkekler</p>
+    <div class="leaderboard">${maleHTML}</div>
+    
+    <div class="divider"></div>
+    
+    <p class="title">👧 Kızlar</p>
+    <div class="leaderboard">${femaleHTML}</div>
+    
+    <div class="btnrow" style="margin-top:16px">
+      <button class="ghost" id="btnBack">Geri Dön</button>
+    </div>
+  `;
+
+  $("btnBack").onclick = () => {
+    if(state.playerName) renderHome();
+    else renderWelcome();
+  };
+}
+
+/* ---------- storage ---------- */
+async function saveScore(name, gender, score){
+  try {
+    const key = `score_${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
+    const data = JSON.stringify({ name, gender, score, timestamp: Date.now() });
+    await window.storage.set(key, data, true);
+  } catch(err){
+    console.error("Skor kaydedilemedi:", err);
+  }
+}
+
+async function loadScores(){
+  try {
+    const result = await window.storage.list("score_", true);
+    if(!result || !result.keys) return [];
+    
+    const scores = [];
+    for(const key of result.keys){
+      try {
+        const item = await window.storage.get(key, true);
+        if(item && item.value){
+          const data = JSON.parse(item.value);
+          scores.push(data);
+        }
+      } catch(e){
+        console.error("Skor okunamadı:", e);
+      }
+    }
+    return scores;
+  } catch(err){
+    console.error("Skorlar yüklenemedi:", err);
+    return [];
+  }
+}
+
+/* ---------- güvenli metin ---------- */
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* ---------- başlat ---------- */
+renderWelcome();
+</script>
+</body>
+</html>
