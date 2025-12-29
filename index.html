@@ -293,16 +293,22 @@ function genAlgebraQuestion(){
 
   if(type===1){
     // Değer bulma
-    const a = difficulty === "easy" ? rnd(2,4) : rnd(3,8) * (Math.random()<0.3 ? -1 : 1);
-    const x = difficulty === "easy" ? rnd(-2,4) : rnd(-6,8);
-    const b = difficulty === "easy" ? rnd(-5,5) : rnd(-12,12);
+    const a = difficulty === "easy" ? rnd(1,3) : rnd(5,12) * (Math.random()<0.4 ? -1 : 1);
+    const x = difficulty === "easy" ? rnd(0,3) : rnd(-10,12);
+    const b = difficulty === "easy" ? rnd(0,3) : rnd(-20,20);
     const ans = a*x + b;
     const text = `x = ${x} iken  ${a}x ${b>=0?"+":""}${b}  değeri kaçtır?`;
     const correct = String(ans);
     const distract = new Set([correct]);
-    while(distract.size < 4){
-      const off = difficulty === "easy" ? rnd(-4,4)||2 : rnd(-10,10)||3;
+    let attempts = 0;
+    while(distract.size < 4 && attempts < 50){
+      attempts++;
+      const off = difficulty === "easy" ? rnd(-3,3)||1 : rnd(-15,15)||5;
       distract.add(String(ans + off));
+    }
+    // Eğer yeterli seçenek yoksa zorla ekle
+    while(distract.size < 4){
+      distract.add(String(ans + distract.size));
     }
     return {
       text,
@@ -314,9 +320,9 @@ function genAlgebraQuestion(){
 
   if(type===2){
     // Benzer terimleri topla
-    const p = difficulty === "easy" ? rnd(-5,6) : rnd(-10,10);
-    const q = difficulty === "easy" ? rnd(-5,6) : rnd(-10,10);
-    const r = difficulty === "easy" ? rnd(-5,6) : rnd(-10,10);
+    const p = difficulty === "easy" ? rnd(1,4) : rnd(-15,15);
+    const q = difficulty === "easy" ? rnd(1,4) : rnd(-15,15);
+    const r = difficulty === "easy" ? rnd(1,4) : rnd(-15,15);
     const sum = p+q+r;
     const text = `Sadeleştir:  ${p}x ${q>=0?"+":""}${q}x ${r>=0?"+":""}${r}x`;
     const correct = (sum===0) ? "0" : (sum===1 ? "x" : (sum===-1 ? "-x" : `${sum}x`));
@@ -324,11 +330,16 @@ function genAlgebraQuestion(){
     const candidates = [
       `${p}x`, `${q}x`, `${r}x`,
       `${p+q}x`, `${p+r}x`, `${q+r}x`,
-      `${sum+1}x`, `${sum-1}x`, `${sum+2}x`
+      `${sum+1}x`, `${sum-1}x`, `${sum+2}x`, `${sum-2}x`
     ];
-    while(distract.size < 4){
+    let attempts = 0;
+    while(distract.size < 4 && attempts < 30){
+      attempts++;
       const pick = candidates[rnd(0,candidates.length-1)];
       distract.add(pick==="0x" ? "0" : pick);
+    }
+    while(distract.size < 4){
+      distract.add(`${sum + distract.size}x`);
     }
     return {
       text,
@@ -340,8 +351,8 @@ function genAlgebraQuestion(){
 
   if(type===3){
     // Dağılma
-    const k = difficulty === "easy" ? rnd(2,4) : rnd(2,7) * (Math.random()<0.25 ? -1 : 1);
-    const m = difficulty === "easy" ? rnd(-6,6) : rnd(-12,12);
+    const k = difficulty === "easy" ? rnd(2,3) : rnd(3,9) * (Math.random()<0.3 ? -1 : 1);
+    const m = difficulty === "easy" ? rnd(1,4) : rnd(-18,18);
     const text = `Aç (dağıt):  ${k}(x ${m>=0?"+":""}${m})`;
     const c1 = `${k}x`;
     const c2v = k*m;
@@ -351,8 +362,13 @@ function genAlgebraQuestion(){
     const wrong2 = `${k}x ${m>=0?"+":""}${k+m}`;
     const wrong3 = `${(k*m)}x ${m>=0?"+":""}${m}`;
     [wrong1, wrong2, wrong3].forEach(x => distract.add(x));
-    while(distract.size<4){
-      distract.add(`${k}x ${(c2v + rnd(-4,4))>=0?"+":" "}${c2v + rnd(-4,4)}`);
+    let attempts = 0;
+    while(distract.size < 4 && attempts < 30){
+      attempts++;
+      distract.add(`${k}x ${(c2v + rnd(-6,6))>=0?"+":""}${c2v + rnd(-6,6)}`);
+    }
+    while(distract.size < 4){
+      distract.add(`${k}x ${c2v + distract.size}`);
     }
     return {
       text,
@@ -363,8 +379,8 @@ function genAlgebraQuestion(){
   }
 
   // type===4: Ortak çarpan
-  const k = difficulty === "easy" ? rnd(2,5) : rnd(2,9);
-  const t = difficulty === "easy" ? rnd(-4,6) : rnd(-8,10);
+  const k = difficulty === "easy" ? rnd(2,3) : rnd(3,12);
+  const t = difficulty === "easy" ? rnd(1,5) : rnd(-12,15);
   const a = k;
   const b = k*t;
   const text = `Ortak çarpanı paranteze al:  ${a}x ${b>=0?"+":""}${b}`;
@@ -373,6 +389,16 @@ function genAlgebraQuestion(){
   distract.add(`${k}x ${t>=0?"+":""}${t}`);
   distract.add(`${k}(x) ${t>=0?"+":""}${t}`);
   distract.add(`${k+t}(x ${t>=0?"+":""}${t})`);
+  let attempts = 0;
+  while(distract.size < 4 && attempts < 30){
+    attempts++;
+    const randK = rnd(2,10);
+    const randT = rnd(-10,10);
+    distract.add(`${randK}(x ${randT>=0?"+":""}${randT})`);
+  }
+  while(distract.size < 4){
+    distract.add(`${k}(x ${t + distract.size})`);
+  }
   return {
     text,
     correct,
@@ -385,9 +411,10 @@ function genRationalQuestion(){
   const difficulty = state.gender === "male" ? "easy" : "hard";
   const type = rnd(1,5);
   
-  const range = difficulty === "easy" ? 6 : 12;
-  const a = normFrac(rnd(-range,range) || 3, rnd(2, difficulty==="easy"?6:10));
-  const b = normFrac(rnd(-range,range) || 2, rnd(2, difficulty==="easy"?6:10));
+  const range = difficulty === "easy" ? 4 : 18;
+  const denomMax = difficulty === "easy" ? 4 : 15;
+  const a = normFrac(rnd(-range,range) || 2, rnd(2, denomMax));
+  const b = normFrac(rnd(-range,range) || 2, rnd(2, denomMax));
 
   if(type===1){
     const ans = addFrac(a,b);
@@ -507,7 +534,13 @@ async function renderWelcome(){
     state.playerName = name;
     state.gender = selectedGender;
     setHUD();
-    renderHome();
+    
+    // Sadık kontrolü
+    if(name.toLowerCase() === "sadık"){
+      renderSadikSpecial();
+    } else {
+      renderHome();
+    }
   };
 }
 
@@ -530,6 +563,33 @@ function renderHome(){
 
   $("btnAlg").onclick = () => startGame("algebra");
   $("btnRat").onclick = () => startGame("rational");
+  $("btnLeaderboard").onclick = renderLeaderboard;
+  $("btnLogout").onclick = renderWelcome;
+}
+
+function renderSadikSpecial(){
+  stopTimer();
+  $("tipBox").textContent = "Sadık'a özel mesaj!";
+
+  $("left").innerHTML = `
+    <span class="badge">🎉 ÖZEL MESAJ</span>
+    <h2 class="big" style="font-size:32px; text-align:center; margin:40px 0;">
+      🏆 BRAVO SADIK! 🏆
+    </h2>
+    <p class="note" style="text-align:center; font-size:16px; margin:30px 0;">
+      Sana soru sormaya gerek yok, zaten en iyisisin! 🌟
+    </p>
+    <div class="divider"></div>
+    <p class="note" style="text-align:center;">
+      Skor: <b>∞ (Sonsuz)</b><br/>
+      Seviye: <b>Efsane</b>
+    </p>
+    <div class="btnrow" style="margin-top:24px; justify-content:center;">
+      <button class="primary" id="btnLeaderboard">🏆 Skor Tablosu</button>
+      <button class="ghost" id="btnLogout">Çıkış Yap</button>
+    </div>
+  `;
+
   $("btnLeaderboard").onclick = renderLeaderboard;
   $("btnLogout").onclick = renderWelcome;
 }
